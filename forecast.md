@@ -2,4 +2,4 @@
 
 ## Today
 
-sunny
+sunny with a chance of rain.
