@@ -6,7 +6,9 @@
  2. set up difftool automatically
  3. emacs ~ files to be ignored
  4. alias sw for switch
+ 5. how does blame work?
  
 ## team use
 
  1. do we want to tag?
+ 2. use a template repository?
