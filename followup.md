@@ -7,6 +7,7 @@
  3. emacs ~ files to be ignored
  4. alias sw for switch
  5. how does blame work?
+ 6. make a local alias global
  
 ## team use
 
