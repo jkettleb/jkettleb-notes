@@ -13,3 +13,4 @@
 
  1. do we want to tag?
  2. use a template repository?
+ 3. how would we use milestones and projects?
