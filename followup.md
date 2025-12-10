@@ -2,12 +2,8 @@
 
 ## personal
 
- 1. auto staging
- 2. set up difftool automatically
- 3. emacs ~ files to be ignored
- 4. alias sw for switch
- 5. how does blame work?
- 6. make a local alias global
+ 1. set up difftool automatically
+ 2. emacs ~ files to be ignored
  
 ## team use
 
