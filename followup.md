@@ -4,7 +4,8 @@
 
  1. set up difftool automatically
  2. emacs ~ files to be ignored
- 3. github team and organisation
+ 3. git mode support in emacs
+ 4. github team and organisation
  
 ## team use
 
