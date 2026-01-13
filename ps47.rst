@@ -13,41 +13,58 @@ Operational suite
 
 The expected state at the end of the hindcast go live is in the following table.  In the table 'fc' means both seasonal and short forecasts.
 
-=============   =====  =====  ====
-Configuration   fc/hc  os/ps  cylc
-=============   =====  =====  ====
-GC3.2           fc     os     7  
-GC5.1           hc     os     8
-GC5.1           fc     ps     8
-=============   =====  =====  ====
+=============   =====  =====  ====  ===========
+Configuration   fc/hc  os/ps  cylc  id
+=============   =====  =====  ====  ===========
+GC3.2           fc     os     7     os46-bridge
+GC5.1           hc     os     8     os47
+GC5.1           fc     ps     8     os47-bridge
+=============   =====  =====  ====  ===========
+
+Note: 'bridging suites' may, in practice, have a more descriptive name.
 
 Expect to get to this state from standard ps running:
 
    1. Turn off hindcasts in GC3.2 OS46 suite (rose-suite.conf edit)
    2. Turn off forecasts in GC5.1 PS47 suite (rose-suite.conf edit), update hindcast control file (rose-app.conf edit) and make live (sym links)
    3. Start up a GC3.2 forecast only suite (bridging)
+      
       * uses the JULES dump from GC5.1 PS47 location  
 
+Proposed route for implementation is to:
+   1. create a JIRA issue for each of these workflows. These JIRA issues give the instructions (e.g. any file copies, working copy updates, etc) to set up each workflow.
+   2. Operational suite team to use the JIRA to create the implementation plan
+   3. GloSea team to review.
+   
 Need to check
    1. GC3.2 forecasts are still being archived to os46
    2. GC3.2 forecasts are being delivered through DART to os channels
+      
       * check operational suite logs
       * check delivery to SPICE
       * check delivery to standalone applications boxes
+	
    3. GC3.2 forecasts are still being initialised from the os46 global model dumps
-   3. Correct GC5.1 hindcasts are being run
+   4. Correct GC5.1 hindcasts are being run
+      
       * check os 47 init hindcast control log has expected dates
-   4. GC5.1 hincasts are being archived to os47, and not ps47
-   4. GC5.1 hindcasts are beind delivered through DART to os channels
+	
+   5. GC5.1 hincasts are being archived to os47, and not ps47
+   6. GC5.1 hindcasts are beind delivered through DART to os channels
+      
       * check operational suite logs
       * check delivery to SPICE
       * check delivery to standalone applications boxes
-   5. GC5.1 forecasts are still being archived to ps46
-   6. GC5.1 forecasts are beind delivered through DART to ps channels
+	
+   7. GC5.1 forecasts are still being archived to ps46
+   8. GC5.1 forecasts are beind delivered through DART to ps channels
+      
       * check operational suite logs
       * check delivery to SPICE
       * check delivery to standalone applications boxes
-   7. GC5.1 forecasts are initialised from correct data
+	
+   9. GC5.1 forecasts are initialised from correct data
+      
       * check operational suite logs for atmosphere and land surface
 
 Post processing systems
