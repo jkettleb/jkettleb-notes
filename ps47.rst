@@ -1,0 +1,42 @@
+Notes on go live for PS47
+=========================
+
+Hindcast go live
+----------------
+
+This should happen same day as the rest of the operational suite go live
+
+=============   =====  =====
+Configuration   fc/hc  op/ps  
+=============   =====  =====
+GC3.2           fc     op
+GC5.1           hc     op
+GC5.1           fc     ps
+=============   =====  =====
+
+In this case 'fc' means both seasonal and short forecasts.
+
+
+
+Need to check
+   1. GC3.2 forecasts are still being archived to os46
+   2. GC3.2 forecasts are being delivered through DART to os channels
+      * check operational suite logs
+      * check delivery to SPICE
+      * check delivery to standalone applications boxes
+   3. GC3.2 forecasts are still being initialised from the os46 global model dumps
+   3. Correct GC5.1 hindcasts are being run
+      * check os 47 init hindcast control log has expected dates
+   4. GC5.1 hincasts are being archived to os47, and not ps47
+   4. GC5.1 hindcasts are beind delivered through DART to os channels
+      * check operational suite logs
+      * check delivery to SPICE
+      * check delivery to standalone applications boxes
+   5. GC5.1 forecasts are still being archived to ps46
+   6. GC5.1 forecasts are beind delivered through DART to ps channels
+      * check operational suite logs
+      * check delivery to SPICE
+      * check delivery to standalone applications boxes
+   7. GC5.1 forecasts are initialised from correct data
+      * check operational suite logs for atmosphere and land surface
+
