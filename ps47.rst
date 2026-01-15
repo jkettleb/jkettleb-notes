@@ -4,7 +4,7 @@ Notes on go live for PS47
 Hindcast go live
 ----------------
 
-Scheduled for 20/1/2026.
+Scheduled for 21/1/2026.
 
 This should happen same day as the rest of the operational suite go live.
 
@@ -72,9 +72,52 @@ Post processing systems
 
 We want to ensure that the OS47 hindcasts do not get processed and included in OS46 processing.
 
+Prepare for hindcast go live
+----------------------------
+
+On hindcast go live day DART feeds to our OS directories will have GC3.2 forecasts, but GC5.1 hindcasts.  We need to take this into account.
+
+We will try to keep the number of post processing workflows to a minimum.
+
+GSPP
+^^^^
+
+S2S processing. We want both GS3.2 forecasts and GC5.1 hindcasts to be processed and sent so leave the s2s processing as is.
+
+sort_wholesale, sort_daily - we want GC3.2 forecasts to continue to be sorted to the default (/data/users/sfcpp/project/seas_prods), but GC5.1 to be sorted into the ps47 location (/data/users/sfcpp/project/seas_prods/ps47).  To do this, before sorting the data, move the GC5.1 hindcasts from the dart os delivery location to the ps delivery location.
+
+suite_monitor
+
+gs_mass_get csv creation
+
+WebMon
+^^^^^^
+
+cam and mon - these are similar to wholesale and daily in GSPP.
+
+
+
+
 Prepare for forecast go live
 ----------------------------
 
+  * need to start accumulating the right climatologies
+  * identify data to be moved
+    
 Forecast go live
 ----------------
+  * move data
 
+    * standalone apps boxes
+    * SPICE ps47 back to default locations
+
+  * check
+  * suite adjustments?
+  * turn off old suites
+  * set date for removing any old OS46 data
+  * suite monitor doing the right thing?
+    
+Other things to remember
+------------------------
+
+  * delete test data, and any test workflows.
