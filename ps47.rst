@@ -25,9 +25,9 @@ Note: 'bridging suites' may, in practice, have a more descriptive name.
 
 Expect to get to this state from standard ps running:
 
-   1. Turn off hindcasts in GC3.2 OS46 suite (rose-suite.conf edit)
+   1. Turn off hindcasts in GC3.2 OS46 suite, point dump at PS46 Global dumps (rose-suite.conf edit)
    2. Turn off forecasts in GC5.1 PS47 suite (rose-suite.conf edit), update hindcast control file (rose-app.conf edit) and make live (sym links)
-   3. Start up a GC3.2 forecast only suite (bridging)
+   3. Start up a GC5.1 forecast only suite, point at OS47 Global dumps  (bridging)
       
       * uses the JULES dump from GC5.1 PS47 location  
 
@@ -77,32 +77,53 @@ Prepare for hindcast go live
 
 On hindcast go live day DART feeds to our OS directories will have GC3.2 forecasts, but GC5.1 hindcasts.  We need to take this into account.
 
-We will try to keep the number of post processing workflows to a minimum.
+We will try to keep the number of post processing workflows to a minimum.  Keep one set of suites processing GC3.2 data, one set processing GC5.1 data.
+
+=======================    ======
+Suite                      Config
+=======================    ======
+GSPP                       GC3.2 
+GSPP_Sorting_PS47_data     GC5.1
+mi-an438                   GC3.2
+PS47_WebMon                GC5.1
+=======================    ======
+
+Model for suites - name them as OS, but have them run from a trunk/branch?
 
 GSPP
 ^^^^
 
 S2S processing. We want both GS3.2 forecasts and GC5.1 hindcasts to be processed and sent so leave the s2s processing as is.
 
-sort_wholesale, sort_daily - we want GC3.2 forecasts to continue to be sorted to the default (/data/users/sfcpp/project/seas_prods), but GC5.1 to be sorted into the ps47 location (/data/users/sfcpp/project/seas_prods/ps47).  To do this, before sorting the data, move the GC5.1 hindcasts from the dart os delivery location to the ps delivery location.
+sort_wholesale, sort_m2d_daily - we want GC3.2 forecasts to continue to be sorted to the default (/data/users/sfcpp/project/seas_prods), but GC5.1 to be sorted into the ps47 location (/data/users/sfcpp/project/seas_prods/ps47).  To do this, before sorting the data, move the GC5.1 hindcasts from the dart os delivery location to the ps delivery location.  Will also need to delay the sorting of the parallel suite dart locations so that this data has been copied.
 
-suite_monitor
+suite_monitor - the suite monitor will look for os member report.  There will be a clash as we have both OS46 and OS47 running.  We will end up with the 
 
-gs_mass_get csv creation
+gs_mass_get csv creation - this just needs to run in one workflow.  Keep it in the main GSPP.
+
+    
 
 WebMon
 ^^^^^^
 
 cam and mon - these are similar to wholesale and daily in GSPP.
 
+GSDS-S
+^^^^^^
 
+  * Acion: when to start workflow on dev to start processing data?
 
 
 Prepare for forecast go live
 ----------------------------
-
+  * what is the earliest could do a full set of forecast products  - look up on spread sheet
+  * what files are accumilated, and how far in advance.  Do we have them?
+  * where do 'accumlated' files live? (for instructions for data moving)
   * need to start accumulating the right climatologies
   * identify data to be moved
+  * send data to KMA      
+  * get branch through review for gs_mass_get
+  * get branch through review suite_monitor
     
 Forecast go live
 ----------------
@@ -116,8 +137,11 @@ Forecast go live
   * turn off old suites
   * set date for removing any old OS46 data
   * suite monitor doing the right thing?
+  * update gs_mass_get s
     
 Other things to remember
 ------------------------
 
   * delete test data, and any test workflows.
+
+
