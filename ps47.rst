@@ -117,14 +117,35 @@ GSDS-S
 Prepare for forecast go live
 ----------------------------
   * what is the earliest could do a full set of forecast products  - look up on spread sheet
-  * what files are accumilated, and how far in advance.  Do we have them?
+
+    * Monday 9th March is first we have all hindcasts for
+    * Joe suggests we could get testing going by filling earlier with OS46 (works fine for cam, mon)
+
+      * for Webmon 02/02 run: link to GloSea_opdata back to 0101 hindcasts
+    
+  * what files are accumalated, and how far in advance.  Do we have them?
   * where do 'accumlated' files live? (for instructions for data moving)
   * need to start accumulating the right climatologies
   * identify data to be moved
   * send data to KMA      
   * get branch through review for gs_mass_get
   * get branch through review suite_monitor
-    
+
+WebMon
+^^^^^^
+   
+  share/cycle/ /Forecast - weekly means and anoms of the forecasts. means and anoms in separate files
+  share/cycle/ /Hindcast/mmdd - weekly means for hindcasts (used in this cycle?)
+  share/cycle/ /MeanSpread/abs - weekly and 2 weekly mean and spread files, for each variable. mean and spread in separate files
+  share/cycle/ /MeanSpread/anom - sim to above
+  share/cycle/ /mjo/analysis_out - think this the Global model analysis of fields related to Maden Julian oscillation
+  share/cycle/ /web_output - text files and logs related to contour ranges and max and mins of fields? (produced by IDL code)
+  
+  data/climatologies - seasonal? climatologies, one variable, one start date per file (with done files)
+  data/mjo_fc_out - subdir of MJO relevant variables (one file per member)
+
+  opdata links - there for andy GSDS code using MO pp data) I think this is only forecast meeting suite now (??)
+  
 Forecast go live
 ----------------
   * move data
