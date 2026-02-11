@@ -1,8 +1,15 @@
-Notes on go live for PS47
-=========================
+===========================
+ Notes on go live for PS47
+===========================
 
+Preparation
+===========
+
+  1. estimate sizes needed to accumulate parallel suite data ready for post processing systems testing.  Request more space if necessary.
+  2. check if changes in file names or new file types need new routing.  Put in request if necessary.
+     
 Hindcast go live
-----------------
+================
 
 Scheduled for 21/1/2026.
 
