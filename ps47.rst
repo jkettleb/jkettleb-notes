@@ -157,7 +157,7 @@ Tasks
 |gspp_start_strat                    | Daily   |Ensure a plot directoty  |clock trigger          |                                   |                                      |
 |                                    |         |exists for this cyle     |                       |                                   |                                      |
 +------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|convert_strat_hindcasts             |Daily    |Produce zonal mean (60N  |gspp_start_strat       |PROJECT_DIR/m2d_daily/GS_hcst/daily|PROJECT_DIR/zonal_winde_data/hindcasts|
+|convert_strat_hindcasts             |Daily    |Produce zonal mean (60N  |gspp_start_strat       |PROJECT_DIR/m2d_daily/GS_hcst/daily|PROJECT_DIR/zonal_wind_data/hindcasts |
 |                                    |         |and 60S) daily netcdf    |                       |                                   |                                      |
 |                                    |         |files for the hincasts   |                       |                                   |                                      |
 +------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
@@ -177,7 +177,7 @@ Tasks
 |                                    |         |                         |                       |                                   |                                      |
 |                                    |         |                         |                       |                                   |                                      |
 +------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|strat_thumbnails<60N,60S>_mon       |Daly     |                         |process_strat_hindcasts|                                   |                                      |
+|strat_thumbnails<60N,60S>_mon       |Daily    |                         |process_strat_hindcasts|                                   |                                      |
 |                                    |         |                         |                       |                                   |                                      |
 |                                    |         |                         |                       |                                   |                                      |
 +------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
@@ -216,7 +216,17 @@ Forecast go live
   * set date for removing any old OS46 data
   * suite monitor doing the right thing?
   * update gs_mass_get s
-    
+
+WebMon
+~~~~~~
+
+  1. wait for current cyle of mi-an438 and PS47_WebMon to complete
+  2. copy mi-an438/cylc-run to a back up location in case needed for roll back
+  3. rsync cylc-run/PS47_WebMon/share to cylc-run/mi-an438/share
+  4. mv seas_products/ps47/{GloSea_opdata,zonal_wind_data,m2d_daily} to seas_products
+  5. update rose-suite.conf PS_NUM to 48 in roses/mi-an438/rose-suite.conf
+  6. cylc reload mi-an438
+
 Other things to remember
 ------------------------
 
