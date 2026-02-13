@@ -141,6 +141,14 @@ Prepare for forecast go live
 WebMon
 ^^^^^^
 
+Definitions:
+
+Seasonal System
+  The system used to make predictions for the seasons ahead.  Diagnoistcs are seasonal or monthly means.
+
+Monthly System
+  The system used to make predictions for the months ahead.  Diagnostics are based on weekly means (which are derived from daily output).
+  
 Primary input data:
 
 +-------------------------------------------+----------------------------------------------------------+
@@ -156,46 +164,85 @@ Primary input data:
 |                                           |diagnostics                                               |
 +-------------------------------------------+----------------------------------------------------------+
 
-Tasks
+Primary Output locations:
 
-+------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|Task Name                           |Frequency|Description              |Dependencies           |Data in                            |Data out                              |
-+------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|gspp_start_strat                    | Daily   |Ensure a plot directoty  |clock trigger          |                                   |                                      |
-|                                    |         |exists for this cyle     |                       |                                   |                                      |
-+------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|convert_strat_hindcasts             |Daily    |Produce zonal mean (60N  |gspp_start_strat       |PROJECT_DIR/m2d_daily/GS_hcst/daily|PROJECT_DIR/zonal_wind_data/hindcasts |
-|                                    |         |and 60S) daily netcdf    |                       |                                   |                                      |
-|                                    |         |files for the hincasts   |                       |                                   |                                      |
-+------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|process_strat_hindcasts             |Daily    |                         |convert_strat_hindcasts|                                   |                                      |
-|                                    |         |                         |and self at previous   |                                   |                                      |
-|                                    |         |                         |cycle                  |                                   |                                      |
-+------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|update_strat_data                   |Daily    |                         |gspp_start_strat (and  |                                   |                                      |
-|                                    |         |                         |housekeep_data are     |                                   |                                      |
-|                                    |         |                         |previous cylce)        |                                   |                                      |
-+------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|                                    |Daily    |                         |process_strat_hindcasts|                                   |                                      |
-|                                    |         |                         |                       |                                   |                                      |
-|strat_warming_plots<60N,60S>        |         |                         |                       |                                   |                                      |
-+------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|strat_warming_plots_14day{60N,60S>  |Daily    |                         |process_strat_hindcasts|                                   |                                      |
-|                                    |         |                         |                       |                                   |                                      |
-|                                    |         |                         |                       |                                   |                                      |
-+------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|strat_thumbnails<60N,60S>_mon       |Daily    |                         |process_strat_hindcasts|                                   |                                      |
-|                                    |         |                         |                       |                                   |                                      |
-|                                    |         |                         |                       |                                   |                                      |
-+------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|strat_thumbnails<60N,60S>_seas      |Daily    |                         |process_strat_hindcasts|                                   |                                      |
-|                                    |         |                         |                       |                                   |                                      |
-|                                    |         |                         |                       |                                   |                                      |
-+------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
-|strat_analysis_plots<60N,60S>       |Daily    |                         |update_strat_data      |                                   |                                      |
-|                                    |         |                         |                       |                                   |                                      |
-|                                    |         |                         |                       |                                   |                                      |
-+------------------------------------+---------+-------------------------+-----------------------+-----------------------------------+--------------------------------------+
++------------------------------------------+------------------------------------------+
+|Location                                  |Descript ion                              |
++------------------------------------------+------------------------------------------+
+|$PROJECT_DIR/web_monitoring/images_fcst   |Seasonal system images for use in GloSea  |
+|                                          |monitoring pages                          |
++------------------------------------------+------------------------------------------+
+|$PROJECT_DIR/web_monitoring/images_monfcst|Monthly system images for use in the      |
+|                                          |GloSea monitoring pages                   |
++------------------------------------------+------------------------------------------+
+|$PROJECT_DIR/GloSea_opdata                |Monthly mean (cam) and daily (mon) pp data|
+|                                          |are sorted into this directory            |
++------------------------------------------+------------------------------------------+
+|$PROJECT_DIR/zonal_wind_data              |Zonal mean NetCDf files at 60N, 60S and   |
+|                                          |equator                                   |
++------------------------------------------+------------------------------------------+
+
+
+The image directories are made avaialable to the web pages through a series of symbolic links to ~sfcpp/public_html/monitoring_pages.  (Needs more documentation)
+
+Tasks:
+
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|Task Name                           |Frequency|Description                   |Dependencies           |Data in                              |Data out                                                               |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|gspp_start_strat                    |Daily    |Ensure a plot directoty       |clock trigger          |                                     |                                                                       |
+|                                    |         |exists for this cyle          |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|convert_strat_hindcasts             |Daily    |Produce zonal mean (60N       |gspp_start_strat       |PROJECT_DIR/m2d_daily/GS_hcst/daily  |PROJECT_DIR/zonal_wind_data/hindcasts                                  |
+|                                    |         |and 60S) netcdf files for     |                       |                                     |                                                                       |
+|                                    |         |the hincasts                  |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|process_strat_hindcasts             |Daily    |Calculate hindcast            |convert_strat_hindcasts|PROJECT_DIR/zonal_wind_data/hindcasts|PROJECT_DIR/zonal_wind_data/hindcasts                                  |
+|                                    |         |ensemble mean, quartiles      |and self at previous   |                                     |                                                                       |
+|                                    |         |and standard deviation        |cycle                  |                                     |                                                                       |
+|                                    |         |                              |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|update_strat_data                   |Daily    |Retrieves Global model        |gspp_start_strat (and  |$SYSTEMDIR/u_zonal_mean*nc: zonal    |($TMPDIR for files retrieved from                                      |
+|                                    |         |data from MASS,               |housekeep_data are     |mean wind climatology to use in      |MASS) PROJECT_DIR/zonal_wind_data/:                                    |
+|                                    |         |calculates the zonal          |previous cylce)        |anomaly calculations.                |store zonal mean analysis actuals and                                  |
+|                                    |         |means for required            |                       |moose:/opfc/atm/global/prods/%Y.pp   |anomalies                                                              |
+|                                    |         |latitudes (and anomalies      |                       |for Global model data                |                                                                       |
+|                                    |         |aroud a precomputed           |                       |                                     |                                                                       |
+|                                    |         |climatology)                  |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|                                    |Daily    |Plots timeseries of the       |process_strat_hindcasts|PROJECT_DIR/zonal_wind_data/ for     |                                                                       |
+|                                    |         |60N/S zonal mean zonal wind.  |                       |analysis and hindcast data           |$PROJECT_DIR/web_monitoring/images_monfcst/${TODAY}/monthly/StratPlots/|
+|strat_warming_plots<60N,60S>        |         |Ensemble mean, members and    |                       |PROJECT_DIR/m2s_daily for forecast   |                                                                       |
+|                                    |         |quartiles. Also plots         |                       |data.                                |                                                                       |
+|                                    |         |warming fraction. Uses a 4    |                       |                                     |                                                                       |
+|                                    |         |day lagged ensemble.          |                       |                                     |                                                                       |
+|                                    |         |                              |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|strat_warming_plots_14day{60N,60S>  |Daily    |Same as                       |process_strat_hindcasts|same as strat_warming_plots          |same as strat_warming_plots                                            |
+|                                    |         |strat_warming_plots<60N,60S>  |                       |                                     |                                                                       |
+|                                    |         |but using a 14 day lagged     |                       |                                     |                                                                       |
+|                                    |         |ensemble.                     |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|strat_thumbnails<60N,60S>_mon       |Daily    |Plot time-height hovmuller    |process_strat_hindcasts|same as strat_warming_plots          |same as strat_warming plots                                            |
+|                                    |         |of zonal mean zonal wind.     |                       |                                     |                                                                       |
+|                                    |         |Individual members and        |                       |                                     |                                                                       |
+|                                    |         |ensemble mean.  Plots out to  |                       |                                     |                                                                       |
+|                                    |         |60 days                       |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|strat_thumbnails<60N,60S>_seas      |Daily    |Same as                       |process_strat_hindcasts|same as strat_warming_plots          |same as strat_warming_plots                                            |
+|                                    |         |strat_thumbnails<60N,60S>_mon,|                       |                                     |                                                                       |
+|                                    |         |but out to 140 days           |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|strat_analysis_plots<60N,60S>       |Daily    |Plot time-height Hovmuller of |update_strat_data      |PROJECT_DIR/zonal_wind_data for      |same as strat_warming_plots                                            |
+|                                    |         |zonal mean zonal wind, actuals|                       |analysis                             |                                                                       |
+|                                    |         |and anomolies and time series |                       |                                     |                                                                       |
+|                                    |         |of 10hPa zonal mean zonal     |                       |                                     |                                                                       |
+|                                    |         |wind.                         |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|strat_plot_equator_qbo              |Weekly on|Plot time-height Hovmuller of |update_strat_data      |PROJECT_DIR/zonal_wind_data for      |$PROJECT_DIR/web_monitoring/images_fcst/YYMMDD/plots/StratPlots        |
+|                                    |Monday   |zonal mean zonal wind at the  |                       |analysis PROJECT_DIR/m2d_daily for   |                                                                       |
+|                                    |         |equator.                      |                       |memgers                              |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
 
 
   share/cycle/ /Forecast - weekly means and anoms of the forecasts. means and anoms in separate files
@@ -229,8 +276,17 @@ WebMon
 
   1. wait for current cyle of mi-an438 and PS47_WebMon to complete
   2. copy mi-an438/cylc-run to a back up location in case needed for roll back
-  3. rsync cylc-run/PS47_WebMon/share to cylc-run/mi-an438/share
+  3. rsync cylc-run/PS47_WebMon/share/{cycle,data} to cylc-run/mi-an438/share::
+
+       rsync -va --delete share/data ../../PS47_WebMon/share
+       rsync -va --delete share/cycle ../../PS47_WebMon/share
+
+     * this could take a while as the weeklymeans and anomolies are copied
+       
   4. mv seas_products/ps47/{GloSea_opdata,zonal_wind_data,m2d_daily} to seas_products
+
+     * check how to handle images in seas_products/web_monitoring
+       
   5. update rose-suite.conf PS_NUM to 48 in roses/mi-an438/rose-suite.conf
   6. cylc reload mi-an438
 
@@ -238,5 +294,6 @@ Other things to remember
 ------------------------
 
   * delete test data, and any test workflows.
+  * delete any backups
 
 
