@@ -141,6 +141,8 @@ Prepare for forecast go live
 WebMon
 ^^^^^^
 
+These are notes made during our OS47 implementation.  They are incomplete and should be added to as we make changes to web monitoring.
+
 Definitions:
 
 Seasonal System
@@ -148,6 +150,7 @@ Seasonal System
 
 Monthly System
   The system used to make predictions for the months ahead.  Diagnostics are based on weekly means (which are derived from daily output).
+  The MJO and most of the stratospheric diagnostics can be thought of as part of the monthly system as they are used to inform the monthly outlook.
   
 Primary input data:
 
@@ -167,7 +170,7 @@ Primary input data:
 Primary Output locations:
 
 +------------------------------------------+------------------------------------------+
-|Location                                  |Descript ion                              |
+|Location                                  |Description                               |
 +------------------------------------------+------------------------------------------+
 |$PROJECT_DIR/web_monitoring/images_fcst   |Seasonal system images for use in GloSea  |
 |                                          |monitoring pages                          |
@@ -183,7 +186,11 @@ Primary Output locations:
 +------------------------------------------+------------------------------------------+
 
 
-The image directories are made avaialable to the web pages through a series of symbolic links to ~sfcpp/public_html/monitoring_pages.  (Needs more documentation)
+The image directories are made available to the web pages through a series of symbolic links to ~sfcpp/public_html/monitoring_pages.  (Needs more documentation)
+
+In the seasonal system the images are kept in dated directories: $PROJECT_DIR/web_monitoring/images_fcst/YYYYMMDD, where YYYYMMDD is the date of the cycle the images were produced on.  The sub directories of these data directories are symlinked to $PRJOECT_DIR/web_monitoring/images_fcst/symlinks/week-0 (and week-1 to week-10).  week-0 links to the set of figures produced by the most recent cycle, week-1 to the plots produced by the previous weeks cycle, etc.   The web monitoring workflow updates the week-0, week-1 etc. links to the dated directories under images_fcst as it runs once a week.  (This is done by the symlinks task).  The images are then made available to the web server through another set of links from sfcpp/public_html/monitoring_pages/images_fcst to the week-0, week-1 etc. directories.
+
+In the monthly system the choice of forecast initialisation time is handled differently (this is historical).  Images are saved in directories $PROJECT_DIR/web_monitoring/images_monfcst/YYYMMDD.  YYYYMMDD is the cylce date the images were produced on.  The images are made available to the web server through a link from ~sfcpp/public_html/monitoring_pages/images_monfcst to $PROJECT_DIR/web_monitoring/images_monfcst.  A piece of javascript then links 'latest', 'day-1' etc. to the date YYYYMMDD used in the directory name.
 
 Tasks:
 
