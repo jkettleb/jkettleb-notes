@@ -263,7 +263,14 @@ Tasks:
   data/mjo_fc_out - subdir of MJO relevant variables (one file per member)
 
   opdata links - there for andy GSDS code using MO pp data) I think this is only forecast meeting suite now (??)
-  
+
+Monday before go live
+---------------------
+
+For webmonitoring:
+$ cd /data/users/sfcpp/project/seas_products/ps47
+$ find ./GloSea_opdata/GS_fcst -type f -name '*_ps_*' -exec rename _ps_ _op_ \{\} \;
+
 Forecast go live
 ----------------
   * move data
@@ -294,7 +301,7 @@ WebMon
 
      * check how to handle images in seas_products/web_monitoring
        
-  5. update rose-suite.conf PS_NUM to 48 in roses/mi-an438/rose-suite.conf
+
   6. cylc reload mi-an438
 
 Other things to remember
