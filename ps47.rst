@@ -1,0 +1,313 @@
+===========================
+ Notes on go live for PS47
+===========================
+
+Preparation
+===========
+
+  1. estimate sizes needed to accumulate parallel suite data ready for post processing systems testing.  Request more space if necessary.
+  2. check if changes in file names or new file types need new routing.  Put in request if necessary.
+     
+Hindcast go live
+================
+
+Scheduled for 21/1/2026.
+
+This should happen same day as the rest of the operational suite go live.
+
+Operational suite
+^^^^^^^^^^^^^^^^^
+
+The expected state at the end of the hindcast go live is in the following table.  In the table 'fc' means both seasonal and short forecasts.
+
+=============   =====  =====  ====  ===========
+Configuration   fc/hc  os/ps  cylc  id
+=============   =====  =====  ====  ===========
+GC3.2           fc     os     7     os46-bridge
+GC5.1           hc     os     8     os47
+GC5.1           fc     ps     8     os47-bridge
+=============   =====  =====  ====  ===========
+
+Note: 'bridging suites' may, in practice, have a more descriptive name.
+
+Expect to get to this state from standard ps running:
+
+   1. Turn off hindcasts in GC3.2 OS46 suite, point dump at PS46 Global dumps (rose-suite.conf edit)
+   2. Turn off forecasts in GC5.1 PS47 suite (rose-suite.conf edit), update hindcast control file (rose-app.conf edit) and make live (sym links)
+   3. Start up a GC5.1 forecast only suite, point at OS47 Global dumps  (bridging)
+      
+      * uses the JULES dump from GC5.1 PS47 location  
+
+Proposed route for implementation is to:
+   1. create a JIRA issue for each of these workflows. These JIRA issues give the instructions (e.g. any file copies, working copy updates, etc) to set up each workflow.
+   2. Operational suite team to use the JIRA to create the implementation plan
+   3. GloSea team to review.
+   
+Need to check
+   1. GC3.2 forecasts are still being archived to os46
+   2. GC3.2 forecasts are being delivered through DART to os channels
+      
+      * check operational suite logs
+      * check delivery to SPICE
+      * check delivery to standalone applications boxes
+	
+   3. GC3.2 forecasts are still being initialised from the os46 global model dumps
+   4. Correct GC5.1 hindcasts are being run
+      
+      * check os 47 init hindcast control log has expected dates
+	
+   5. GC5.1 hincasts are being archived to os47, and not ps47
+   6. GC5.1 hindcasts are beind delivered through DART to os channels
+      
+      * check operational suite logs
+      * check delivery to SPICE
+      * check delivery to standalone applications boxes
+	
+   7. GC5.1 forecasts are still being archived to ps46
+   8. GC5.1 forecasts are beind delivered through DART to ps channels
+      
+      * check operational suite logs
+      * check delivery to SPICE
+      * check delivery to standalone applications boxes
+	
+   9. GC5.1 forecasts are initialised from correct data
+      
+      * check operational suite logs for atmosphere and land surface
+
+Post processing systems
+^^^^^^^^^^^^^^^^^^^^^^^
+
+We want to ensure that the OS47 hindcasts do not get processed and included in OS46 processing.
+
+Prepare for hindcast go live
+----------------------------
+
+On hindcast go live day DART feeds to our OS directories will have GC3.2 forecasts, but GC5.1 hindcasts.  We need to take this into account.
+
+We will try to keep the number of post processing workflows to a minimum.  Keep one set of suites processing GC3.2 data, one set processing GC5.1 data.
+
+=======================    ======
+Suite                      Config
+=======================    ======
+GSPP                       GC3.2 
+GSPP_Sorting_PS47_data     GC5.1
+mi-an438                   GC3.2
+PS47_WebMon                GC5.1
+=======================    ======
+
+Model for suites - name them as OS, but have them run from a trunk/branch?
+
+GSPP
+^^^^
+
+S2S processing. We want both GS3.2 forecasts and GC5.1 hindcasts to be processed and sent so leave the s2s processing as is.
+
+sort_wholesale, sort_m2d_daily - we want GC3.2 forecasts to continue to be sorted to the default (/data/users/sfcpp/project/seas_prods), but GC5.1 to be sorted into the ps47 location (/data/users/sfcpp/project/seas_prods/ps47).  To do this, before sorting the data, move the GC5.1 hindcasts from the dart os delivery location to the ps delivery location.  Will also need to delay the sorting of the parallel suite dart locations so that this data has been copied.
+
+suite_monitor - the suite monitor will look for os member report.  There will be a clash as we have both OS46 and OS47 running.  We will end up with the 
+
+gs_mass_get csv creation - this just needs to run in one workflow.  Keep it in the main GSPP.
+
+    
+
+WebMon
+^^^^^^
+
+cam and mon - these are similar to wholesale and daily in GSPP.
+
+GSDS-S
+^^^^^^
+
+  * Acion: when to start workflow on dev to start processing data?
+
+
+Prepare for forecast go live
+----------------------------
+  * what is the earliest could do a full set of forecast products  - look up on spread sheet
+
+    * Monday 9th March is first we have all hindcasts for
+    * Joe suggests we could get testing going by filling earlier with OS46 (works fine for cam, mon)
+
+      * for Webmon 02/02 run: link to GloSea_opdata back to 0101 hindcasts
+    
+  * what files are accumalated, and how far in advance.  Do we have them?
+  * where do 'accumlated' files live? (for instructions for data moving)
+  * need to start accumulating the right climatologies
+  * identify data to be moved
+  * send data to KMA      
+  * get branch through review for gs_mass_get
+  * get branch through review suite_monitor
+
+WebMon
+^^^^^^
+
+These are notes made during our OS47 implementation.  They are incomplete and should be added to as we make changes to web monitoring.
+
+Definitions:
+
+Seasonal System
+  The system used to make predictions for the seasons ahead.  Diagnoistcs are seasonal or monthly means.
+
+Monthly System
+  The system used to make predictions for the months ahead.  Diagnostics are based on weekly means (which are derived from daily output).
+  The MJO and most of the stratospheric diagnostics can be thought of as part of the monthly system as they are used to inform the monthly outlook.
+  
+Primary input data:
+
++-------------------------------------------+----------------------------------------------------------+
+|Location                                   |Description                                               |
++-------------------------------------------+----------------------------------------------------------+
+|$DART/cam                                  |Monthly mean data for the seasonal system                 |
++-------------------------------------------+----------------------------------------------------------+
+|$DART/mon                                  |Daily data for the Monthly system                         |
++-------------------------------------------+----------------------------------------------------------+  
+|$PROJECT_DIR/m2d_daily/GC_hcst/daily       |Daily data used in stratospheric figures                  |
++-------------------------------------------+----------------------------------------------------------+
+|MASS                                       |Global model analysis used in MJO and stratospheric       |
+|                                           |diagnostics                                               |
++-------------------------------------------+----------------------------------------------------------+
+
+Primary Output locations:
+
++------------------------------------------+------------------------------------------+
+|Location                                  |Description                               |
++------------------------------------------+------------------------------------------+
+|$PROJECT_DIR/web_monitoring/images_fcst   |Seasonal system images for use in GloSea  |
+|                                          |monitoring pages                          |
++------------------------------------------+------------------------------------------+
+|$PROJECT_DIR/web_monitoring/images_monfcst|Monthly system images for use in the      |
+|                                          |GloSea monitoring pages                   |
++------------------------------------------+------------------------------------------+
+|$PROJECT_DIR/GloSea_opdata                |Monthly mean (cam) and daily (mon) pp data|
+|                                          |are sorted into this directory            |
++------------------------------------------+------------------------------------------+
+|$PROJECT_DIR/zonal_wind_data              |Zonal mean NetCDf files at 60N, 60S and   |
+|                                          |equator                                   |
++------------------------------------------+------------------------------------------+
+
+
+The image directories are made available to the web pages through a series of symbolic links to ~sfcpp/public_html/monitoring_pages.  (Needs more documentation)
+
+In the seasonal system the images are kept in dated directories: $PROJECT_DIR/web_monitoring/images_fcst/YYYYMMDD, where YYYYMMDD is the date of the cycle the images were produced on.  The sub directories of these data directories are symlinked to $PRJOECT_DIR/web_monitoring/images_fcst/symlinks/week-0 (and week-1 to week-10).  week-0 links to the set of figures produced by the most recent cycle, week-1 to the plots produced by the previous weeks cycle, etc.   The web monitoring workflow updates the week-0, week-1 etc. links to the dated directories under images_fcst as it runs once a week.  (This is done by the symlinks task).  The images are then made available to the web server through another set of links from sfcpp/public_html/monitoring_pages/images_fcst to the week-0, week-1 etc. directories.
+
+In the monthly system the choice of forecast initialisation time is handled differently (this is historical).  Images are saved in directories $PROJECT_DIR/web_monitoring/images_monfcst/YYYMMDD.  YYYYMMDD is the cylce date the images were produced on.  The images are made available to the web server through a link from ~sfcpp/public_html/monitoring_pages/images_monfcst to $PROJECT_DIR/web_monitoring/images_monfcst.  A piece of javascript then links 'latest', 'day-1' etc. to the date YYYYMMDD used in the directory name.
+
+Tasks:
+
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|Task Name                           |Frequency|Description                   |Dependencies           |Data in                              |Data out                                                               |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|gspp_start_strat                    |Daily    |Ensure a plot directoty       |clock trigger          |                                     |                                                                       |
+|                                    |         |exists for this cyle          |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|convert_strat_hindcasts             |Daily    |Produce zonal mean (60N       |gspp_start_strat       |PROJECT_DIR/m2d_daily/GS_hcst/daily  |PROJECT_DIR/zonal_wind_data/hindcasts                                  |
+|                                    |         |and 60S) netcdf files for     |                       |                                     |                                                                       |
+|                                    |         |the hincasts                  |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|process_strat_hindcasts             |Daily    |Calculate hindcast            |convert_strat_hindcasts|PROJECT_DIR/zonal_wind_data/hindcasts|PROJECT_DIR/zonal_wind_data/hindcasts                                  |
+|                                    |         |ensemble mean, quartiles      |and self at previous   |                                     |                                                                       |
+|                                    |         |and standard deviation        |cycle                  |                                     |                                                                       |
+|                                    |         |                              |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|update_strat_data                   |Daily    |Retrieves Global model        |gspp_start_strat (and  |$SYSTEMDIR/u_zonal_mean*nc: zonal    |($TMPDIR for files retrieved from                                      |
+|                                    |         |data from MASS,               |housekeep_data are     |mean wind climatology to use in      |MASS) PROJECT_DIR/zonal_wind_data/:                                    |
+|                                    |         |calculates the zonal          |previous cylce)        |anomaly calculations.                |store zonal mean analysis actuals and                                  |
+|                                    |         |means for required            |                       |moose:/opfc/atm/global/prods/%Y.pp   |anomalies                                                              |
+|                                    |         |latitudes (and anomalies      |                       |for Global model data                |                                                                       |
+|                                    |         |aroud a precomputed           |                       |                                     |                                                                       |
+|                                    |         |climatology)                  |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|                                    |Daily    |Plots timeseries of the       |process_strat_hindcasts|PROJECT_DIR/zonal_wind_data/ for     |                                                                       |
+|                                    |         |60N/S zonal mean zonal wind.  |                       |analysis and hindcast data           |$PROJECT_DIR/web_monitoring/images_monfcst/${TODAY}/monthly/StratPlots/|
+|strat_warming_plots<60N,60S>        |         |Ensemble mean, members and    |                       |PROJECT_DIR/m2s_daily for forecast   |                                                                       |
+|                                    |         |quartiles. Also plots         |                       |data.                                |                                                                       |
+|                                    |         |warming fraction. Uses a 4    |                       |                                     |                                                                       |
+|                                    |         |day lagged ensemble.          |                       |                                     |                                                                       |
+|                                    |         |                              |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|strat_warming_plots_14day{60N,60S>  |Daily    |Same as                       |process_strat_hindcasts|same as strat_warming_plots          |same as strat_warming_plots                                            |
+|                                    |         |strat_warming_plots<60N,60S>  |                       |                                     |                                                                       |
+|                                    |         |but using a 14 day lagged     |                       |                                     |                                                                       |
+|                                    |         |ensemble.                     |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|strat_thumbnails<60N,60S>_mon       |Daily    |Plot time-height hovmuller    |process_strat_hindcasts|same as strat_warming_plots          |same as strat_warming plots                                            |
+|                                    |         |of zonal mean zonal wind.     |                       |                                     |                                                                       |
+|                                    |         |Individual members and        |                       |                                     |                                                                       |
+|                                    |         |ensemble mean.  Plots out to  |                       |                                     |                                                                       |
+|                                    |         |60 days                       |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|strat_thumbnails<60N,60S>_seas      |Daily    |Same as                       |process_strat_hindcasts|same as strat_warming_plots          |same as strat_warming_plots                                            |
+|                                    |         |strat_thumbnails<60N,60S>_mon,|                       |                                     |                                                                       |
+|                                    |         |but out to 140 days           |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|strat_analysis_plots<60N,60S>       |Daily    |Plot time-height Hovmuller of |update_strat_data      |PROJECT_DIR/zonal_wind_data for      |same as strat_warming_plots                                            |
+|                                    |         |zonal mean zonal wind, actuals|                       |analysis                             |                                                                       |
+|                                    |         |and anomolies and time series |                       |                                     |                                                                       |
+|                                    |         |of 10hPa zonal mean zonal     |                       |                                     |                                                                       |
+|                                    |         |wind.                         |                       |                                     |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+|strat_plot_equator_qbo              |Weekly on|Plot time-height Hovmuller of |update_strat_data      |PROJECT_DIR/zonal_wind_data for      |$PROJECT_DIR/web_monitoring/images_fcst/YYMMDD/plots/StratPlots        |
+|                                    |Monday   |zonal mean zonal wind at the  |                       |analysis PROJECT_DIR/m2d_daily for   |                                                                       |
+|                                    |         |equator.                      |                       |memgers                              |                                                                       |
++------------------------------------+---------+------------------------------+-----------------------+-------------------------------------+-----------------------------------------------------------------------+
+
+
+  share/cycle/ /Forecast - weekly means and anoms of the forecasts. means and anoms in separate files
+  share/cycle/ /Hindcast/mmdd - weekly means for hindcasts (used in this cycle?)
+  share/cycle/ /MeanSpread/abs - weekly and 2 weekly mean and spread files, for each variable. mean and spread in separate files
+  share/cycle/ /MeanSpread/anom - sim to above
+  share/cycle/ /mjo/analysis_out - think this the Global model analysis of fields related to Maden Julian oscillation
+  share/cycle/ /web_output - text files and logs related to contour ranges and max and mins of fields? (produced by IDL code)
+  
+  data/climatologies - seasonal? climatologies, one variable, one start date per file (with done files)
+  data/mjo_fc_out - subdir of MJO relevant variables (one file per member)
+
+  opdata links - there for andy GSDS code using MO pp data) I think this is only forecast meeting suite now (??)
+
+Monday before go live
+---------------------
+
+For webmonitoring:
+$ cd /data/users/sfcpp/project/seas_products/ps47
+$ find ./GloSea_opdata/GS_fcst -type f -name '*_ps_*' -exec rename _ps_ _op_ \{\} \;
+
+Forecast go live
+----------------
+  * move data
+
+    * standalone apps boxes
+    * SPICE ps47 back to default locations
+
+  * check
+  * suite adjustments?
+  * turn off old suites
+  * set date for removing any old OS46 data
+  * suite monitor doing the right thing?
+  * update gs_mass_get s
+
+WebMon
+~~~~~~
+
+  1. wait for current cyle of mi-an438 and PS47_WebMon to complete
+  2. copy mi-an438/cylc-run to a back up location in case needed for roll back
+  3. rsync cylc-run/PS47_WebMon/share/{cycle,data} to cylc-run/mi-an438/share::
+
+       rsync -va --delete share/data ../../PS47_WebMon/share
+       rsync -va --delete share/cycle ../../PS47_WebMon/share
+
+     * this could take a while as the weeklymeans and anomolies are copied
+       
+  4. mv seas_products/ps47/{GloSea_opdata,zonal_wind_data,m2d_daily} to seas_products
+
+     * check how to handle images in seas_products/web_monitoring
+       
+
+  6. cylc reload mi-an438
+
+Other things to remember
+------------------------
+
+  * delete test data, and any test workflows.
+  * delete any backups
+
+
